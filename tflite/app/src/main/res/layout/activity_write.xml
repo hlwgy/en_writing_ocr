@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".WriteActivity"
+    android:padding="16dp">
+
+    <cn.a2q.tflite.DrawingView
+        android:id="@+id/drawing_surface"
+        android:layout_width="280dp"
+        android:layout_height="280dp"
+        android:layout_centerHorizontal="true"/>
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="55dp"
+        android:layout_below="@id/drawing_surface"
+        android:layout_alignStart="@id/drawing_surface"
+        android:layout_alignEnd="@id/drawing_surface"
+        >
+        <Button
+            android:id="@+id/clear_button"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:onClick="clear"
+            android:text="清空" />
+
+        <TextView
+            android:id="@+id/tv_result"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="结果：5"
+            android:textColor="#666666"
+            android:textSize="18sp" />
+        <TextView android:id="@+id/tv_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="9sp"
+            android:textColor="#999999"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@id/tv_result"
+            android:text="耗时20ms"/>
+        <Button
+            android:id="@+id/save_button"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="识别"
+            android:onClick="save"
+            android:layout_alignParentRight="true"/>
+    </RelativeLayout>
+</RelativeLayout>

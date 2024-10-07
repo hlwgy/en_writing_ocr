@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>手写识别测试页面</title>
+	<script src="./static/jquery-3.6.1.min.js"></script>
+	<style>
+        body {display: flex;flex-direction: column;align-items: center;justify-content: center;height: 100vh;}
+        #canvas {background-color: black;}
+        .buttons-container {display: flex;justify-content: space-between;width: 280px;margin-top: 10px;}
+		#num_result{ color: brown;font-size: larger;}
+		.save_notice{ color: rgb(95, 91, 91);font-size: medium;}
+    </style>
+</head>
+<body style="margin: 0 auto;">
+	<h3>单个字符识别</h3>
+    <canvas id="canvas" width="280" height="280">Canvas not supported</canvas>
+	<div class="buttons-container">
+        <button id="num_ocr">识别字符</button>
+        <label id="num_result"></label>
+		<button id="clear_canvas">清空画板</button>
+    </div>
+	
+	<div class="buttons-container">
+		<label  class="save_notice">将绘制图形保存到训练集，标记为</label>
+    </div>
+	<div class="buttons-container">
+		<button id="num_0" class="num-button">0</button>
+		<button id="num_1" class="num-button">1</button>
+		<button id="num_2" class="num-button">2</button>
+		<button id="num_3" class="num-button">3</button>
+		<button id="num_4" class="num-button">4</button>
+	</div>
+	<div class="buttons-container">
+		<button id="num_5" class="num-button">5</button>
+		<button id="num_6" class="num-button">6</button>
+		<button id="num_7" class="num-button">7</button>
+		<button id="num_8" class="num-button">8</button>
+		<button id="num_9" class="num-button">9</button>
+	</div>
+
+<script src="./static/host.js"></script>
+<script type="text/javascript">
+
+	var isDrawing = false;
+	var lastX = 0;
+	var lastY = 0;
+
+	var canvas = document.getElementById("canvas");
+	var context = canvas.getContext("2d");
+	context.fillStyle = '#000000'; // 黑色
+	context.fillRect(0, 0, canvas.width, canvas.height);
+	context.lineWidth = 30;
+	context.lineCap = "round";
+	context.lineJoin = "round";
+	context.strokeStyle = "white";
+
+	function draw(e) {
+		if (!isDrawing) return;
+		e.preventDefault(); // 阻止滚动等默认行为
+
+		var newX, newY;
+		if (e.type.includes('touch')) { // 处理触摸事件
+			var touch = e.touches[0] || e.changedTouches[0];
+			newX = touch.clientX - canvas.offsetLeft;
+			newY = touch.clientY - canvas.offsetTop;
+		} else { // 处理鼠标事件
+			newX = e.clientX - canvas.offsetLeft;
+			newY = e.clientY - canvas.offsetTop;
+		}
+
+		context.beginPath();
+		context.moveTo(lastX, lastY);
+		context.lineTo(newX, newY);
+		context.stroke();
+		[lastX, lastY] = [newX, newY];
+	}
+
+	// 开始绘制
+	function startDrawing(e) {
+		isDrawing = true;
+		[lastX, lastY] = getPosition(e);
+	}
+
+	// 结束绘制
+	function stopDrawing() {
+		isDrawing = false;
+	}
+
+	// 获取鼠标或触摸位置
+	function getPosition(e) {
+		if (e.type.includes('touch')) {
+			var touch = e.touches[0] || e.changedTouches[0];
+			return [touch.clientX - canvas.offsetLeft, touch.clientY - canvas.offsetTop];
+		} else {
+			return [e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop];
+		}
+	}
+
+	// 添加鼠标事件监听器
+	canvas.addEventListener("mousedown", startDrawing);
+	canvas.addEventListener("mousemove", draw);
+	canvas.addEventListener("mouseup", stopDrawing);
+	canvas.addEventListener("mouseleave", stopDrawing);
+
+	// 添加触摸事件监听器
+	canvas.addEventListener("touchstart", startDrawing);
+	canvas.addEventListener("touchmove", draw);
+	canvas.addEventListener("touchend", stopDrawing);
+
+	init_draw();
+	ocr();
+
+	$("#num_ocr").click(function() {
+		ocr();
+	});
+	$("#clear_canvas").click(function() {
+		$("#num_result").html("");
+		clear();
+    });
+	function init_draw(){
+		context.beginPath();
+		context.moveTo(160, 45);
+		context.lineTo(130, 220);
+		context.stroke();
+	}
+	function ocr(){
+		var imageData = canvas.toDataURL();
+		api_ocr(imageData);
+	}
+	function clear(){
+        context.clearRect(0, 0, canvas.width, canvas.height);
+		context.fillStyle = '#000000'; 
+		context.fillRect(0, 0, canvas.width, canvas.height);
+	}
+	function api_ocr(imageData){
+		param = JSON.stringify({"image_data":imageData, "id":"lite"})
+		$.ajax({
+			type: "post",
+			url: host+"/write_char",
+			contentType: "application/json",
+			dataType: "json",
+			async: true,
+			data: param,
+			success: function (response) {
+				var jsonResult = JSON.stringify(response);
+				var resp = eval("(" + jsonResult + ")");
+				if(resp.code == 200){
+					$("#num_result").html("结果："+resp.data)
+					console.log("result:",resp.data);
+					// alert('识别结果:'+resp.data);
+				}else{
+					$("#num_result").html(resp.msg)
+					// alert('发生异常:'+resp.msg);
+				}
+			},
+			error: function (err) {
+				console.log("fail:"+err);
+				alert('发生错误:'+err);
+			}
+		});
+	}
+
+    $('.num-button').click(function() {
+        var buttonId = $(this).attr('id');
+        var num = buttonId.split('_')[1]; // 提取数字部分
+        save_datasets(num);
+    });
+
+    function save_datasets(num) {
+		var imageData = canvas.toDataURL();
+		param = JSON.stringify({"image_data":imageData, "id":num})
+		$.ajax({
+			type: "post",
+			url: host+"/write_char_save",
+			contentType: "application/json",
+			dataType: "json",
+			async: true,
+			data: param,
+			success: function (response) {
+				var jsonResult = JSON.stringify(response);
+				var resp = eval("(" + jsonResult + ")");
+				if(resp.code == 200){
+					$("#num_result").html("结果："+resp.data)
+					console.log("result:",resp.data);
+					clear();
+				}else{
+					$("#num_result").html(resp.msg)
+					// alert('发生异常:'+resp.msg);
+				}
+			},
+			error: function (err) {
+				console.log("fail:"+err);
+				alert('发生错误:'+err);
+			}
+		});
+    }
+
+</script>
+
+</body>
+</html>
