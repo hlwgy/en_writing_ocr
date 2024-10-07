@@ -1,17 +1,20 @@
-轻量级英文手写识别+数字手写识别
+# 轻量级英文手写识别+数字手写识别
 
-# 效果展示:
+## 效果展示:
 
 web端效果，字符串识别
+
 ![](img/web2.gif)
 
 当识别错误，可将数据自动归为训练样本。也可以用这个方法，制作自己的样本。
+
 ![](img/web.gif)
 
 训练后的模型，会生成一份可在安卓单机识别的tflite文件。
+
 ![](img/android.gif)
 
-# 硬件要求：
+## 硬件要求：
 
 ```
 无GPU要求，普通笔记本即可训练和推理
@@ -19,7 +22,7 @@ web端效果，字符串识别
 CPU>2核
 ```
 
-# 特色说明：
+## 特色说明：
 
 ```
 1、采用TensorFlow，支持跨平台，对硬件无要求，cpu、gpu都可以训练和推理。
@@ -27,7 +30,7 @@ CPU>2核
 3、训练模型，多种精度保存和调用，服务端客户端都可以用。tflite支持安卓、树莓派等嵌入式设备单机识别。
 ```
 
-# 项目说明：
+## 项目说明：
 
 
 write_ocr 服务端项目
@@ -48,14 +51,14 @@ tflite
     -- WriteActivity.java  安卓端识别类
 ```
 
-# 操作方法：
+## 操作方法：
 
 ```
-1、依赖包安装requirements.txt
+### 1、依赖包安装requirements.txt
 
 python -m pip install -r requirements.txt
 
-2、将数据集放入 datasets 文件夹下
+### 2、将数据集放入 datasets 文件夹下
 datasets
   -- char_train
     -- 字符a分类文件夹
@@ -66,18 +69,18 @@ datasets
     -- 字符a分类文件夹
     -- 字符b分类文件夹
 
-3、执行训练
+### 3、执行训练
 python char_train.py 
 
-4、启动服务
+### 4、启动服务
 启动命令 uvicorn app:app --host 0.0.0.0 --port 9001 --reload
 
-5、访问地址
+### 5、访问地址
 对外接口 http://127.0.0.1:9001/docs
 单字符识别 http://127.0.0.1:9001/web/write_char.html
 写字板多字符识别 http://127.0.0.1:9001/web/write_string.html
 
-6、安卓端使用
+### 6、安卓端使用
 
 只需要在build.gradle中添加tensorflow-lite支持
 implementation 'org.tensorflow:tensorflow-lite:2.5.0'
@@ -88,7 +91,7 @@ android 下载配置不要压缩tflite文件
     }
 ```
 
-# 数据集来源：
+## 数据集来源：
 ```
 NIST 手印表格和字符数据库
 下载地址 https://www.nist.gov/srd/nist-special-database-19
@@ -97,7 +100,7 @@ NIST 手印表格和字符数据库
 
 ![](img/hsf.png)
 
-# 网络模型结构：
+## 网络模型结构：
 
 ```
 model = Sequential([
@@ -120,7 +123,7 @@ model = Sequential([
 https://tensorflow.google.cn/tutorials/images/classification?hl=zh-cn
 
 
-# 分类说明
+## 分类说明
 
 ```
 python下使用十六进制数字转字符
